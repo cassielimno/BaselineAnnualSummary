@@ -756,3 +756,86 @@ ggplot(data = tribssummer %>% filter(Characteristic_ID == "TP", Station_ID == "C
 
 
 
+#need to do all linear analysis again using the mann kendall analysis #####
+install.packages("rkt")
+library(rkt)
+
+#also take only deepest measure for deep do
+
+
+#cut this data to just bottom for ip1 oxygen 
+wfsummer$year<- as.numeric(wfsummer$year)
+deepdo<- wfsummer  %>% group_by(year, Characteristic_ID, Station_ID, month) %>% 
+  filter(Result_Depth_Height_Measure == max(Result_Depth_Height_Measure), Characteristic_ID == "DO-SAT") 
+
+deepdo<- deepdo %>% group_by(Station_ID, year) %>% 
+  mutate(mean = mean(Result_Value, na.rm = TRUE),
+         se = std.error(Result_Value), n = length(Result_Value))
+
+deepdoip1<- filter(deepdo, Station_ID == "WF-LK-IP1")
+
+deepdoip2<- filter(deepdo, Station_ID == "WF-LK-IP2")
+
+#now do tests??
+domk<- rkt(deepdoip1$year, deepdoip1$Result_Value, deepdoip1$month, rep = "a")
+print(domk)
+
+domkip2<-  rkt(deepdoip2$year, deepdoip2$Result_Value, deepdoip2$month, rep = "a")
+print(domkip2)
+
+#can i graph?
+
+
+#note on the below graph: ip1 has a trend (but there is no trend line on the graph) ip2 has no trend
+
+ggplot()+
+  #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
+  geom_point(data = deepdoip1,
+             aes(x = year, y = mean), size = 2.5, color = "blue")+
+  geom_point(data = deepdoip2,
+             aes(x = year, y = mean), size = 2.5, color = "red")+
+  geom_errorbar(data= deepdoip1, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "blue")+
+  geom_errorbar(data= deepdoip2, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "red")+
+  geom_smooth(method = "lm", se = FALSE)+
+  ylim(0, 112)+
+  # mlc_theme+
+  # theme(axis.text=element_text(size=1),
+  # axis.title=element_text(size=1,face="bold"))+
+  ylab("Summer Deep Lake Dissolved Oxygen Saturation, (%, +/- s.e.)")+
+  xlab("Year")+
+  theme(
+    axis.title.x=element_text(size=10, face="bold", colour = "black"),
+    axis.title.y=element_text(size=10, face="bold", colour = "black"),
+    axis.text.x = element_text(size=12, face="bold", angle=45, hjust=1, colour = "black"),
+    axis.text.y = element_text(size=12, face="bold", colour = "black"),
+    legend.text = element_text(colour="black", size = 11, face = "bold"),
+    legend.title = element_text(colour="black", size=11, face="bold"),
+    legend.position= "right", 
+    axis.line.x = element_line(color="black", linewidth  = 0.3),
+    axis.line.y = element_line(color="black", linewidth  = 0.3),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.3),
+    title = element_text(size = 12, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
+    panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
+  ggtitle("Whitefish Lake Deep Dissolved Oxygen")
+
+
+#next steps ####
+#add other site on to this same graph
+#run mann kendall for other site to see significance
+#maybe remove trend line
+#add on error bars
+
+
+#seperate out sites and re -do trends for sites individually for each varible
+
+
+
+
+
+
+
+

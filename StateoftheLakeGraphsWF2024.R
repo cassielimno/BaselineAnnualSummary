@@ -760,9 +760,9 @@ ggplot(data = tribssummer %>% filter(Characteristic_ID == "TP", Station_ID == "C
 install.packages("rkt")
 library(rkt)
 
+
+
 #also take only deepest measure for deep do
-
-
 #cut this data to just bottom for ip1 oxygen 
 wfsummer$year<- as.numeric(wfsummer$year)
 deepdo<- wfsummer  %>% group_by(year, Characteristic_ID, Station_ID, month) %>% 
@@ -824,8 +824,6 @@ ggplot()+
 
 
 #next steps ####
-#add other site on to this same graph
-#run mann kendall for other site to see significance
 #maybe remove trend line
 #add on error bars
 
@@ -834,8 +832,60 @@ ggplot()+
 
 
 
+#okay lets do this for the other varibles (temp (surface and deep?), chl, tn, tp, nn, secchi)
+#get deep temp ####
+wfsummer$year<- as.numeric(wfsummer$year)
+wfsummer<- wfsummer %>% select(-max, -min, -mean, -se)
+deeptemp<- wfsummer  %>% group_by(year, Characteristic_ID, Station_ID, month) %>% 
+  filter(Result_Depth_Height_Measure == max(Result_Depth_Height_Measure), Characteristic_ID == "TEMP-W") 
 
+deeptemp<- deeptemp %>% group_by(Station_ID, year) %>% 
+  mutate(mean = mean(Result_Value, na.rm = TRUE),
+         se = std.error(Result_Value), n = length(Result_Value))
 
+deeptempip1<- filter(deeptemp, Station_ID == "WF-LK-IP1")
 
+deeptempip2<- filter(deeptemp, Station_ID == "WF-LK-IP2")
 
+#now do tests??
+tempmk<- rkt(deeptempip1$year, deeptempip1$Result_Value, deeptempip1$month, rep = "a")
+print(tempmk)
+
+tempmkip2<-  rkt(deeptempip2$year, deeptempip2$Result_Value, deeptempip2$month, rep = "a")
+print(tempmkip2)
+
+#graphs
+ggplot()+
+  #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
+  geom_point(data = deeptempip1,
+             aes(x = year, y = mean), size = 2.5, color = "blue")+
+  geom_point(data = deeptempip2,
+             aes(x = year, y = mean), size = 2.5, color = "red")+
+  geom_errorbar(data= deeptempip1, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "blue")+
+  geom_errorbar(data= deeptempip2, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "red")+
+  geom_smooth(method = "lm", se = FALSE)+
+  ylim(0, 65)+
+  # mlc_theme+
+  # theme(axis.text=element_text(size=1),
+  # axis.title=element_text(size=1,face="bold"))+
+  ylab("Summer Deep Lake Temperature, (F, +/- s.e.)")+
+  xlab("Year")+
+  theme(
+    axis.title.x=element_text(size=10, face="bold", colour = "black"),
+    axis.title.y=element_text(size=10, face="bold", colour = "black"),
+    axis.text.x = element_text(size=12, face="bold", angle=45, hjust=1, colour = "black"),
+    axis.text.y = element_text(size=12, face="bold", colour = "black"),
+    legend.text = element_text(colour="black", size = 11, face = "bold"),
+    legend.title = element_text(colour="black", size=11, face="bold"),
+    legend.position= "right", 
+    axis.line.x = element_line(color="black", linewidth  = 0.3),
+    axis.line.y = element_line(color="black", linewidth  = 0.3),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.3),
+    title = element_text(size = 12, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
+    panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
+  ggtitle("Whitefish Lake Deep Temperature")
 

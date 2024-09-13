@@ -942,7 +942,7 @@ ggplot()+
   # mlc_theme+
   # theme(axis.text=element_text(size=1),
   # axis.title=element_text(size=1,face="bold"))+
-  ylab("Summer Deep Lake Temperature, (F, +/- s.e.)")+
+  ylab("Summer Total Nitrogen, (ug/L, +/- s.e.)")+
   xlab("Year")+
   theme(
     axis.title.x=element_text(size=10, face="bold", colour = "black"),
@@ -1111,7 +1111,7 @@ ggplot()+
     panel.background = element_blank(),
     panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
     panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
-  ggtitle("Whitefish Lake Chlorphyls a")
+  ggtitle("Whitefish Lake Chlorophyll a")
 
 
 

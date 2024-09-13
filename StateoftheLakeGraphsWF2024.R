@@ -777,10 +777,10 @@ deepdoip1<- filter(deepdo, Station_ID == "WF-LK-IP1")
 deepdoip2<- filter(deepdo, Station_ID == "WF-LK-IP2")
 
 #now do tests??
-domk<- rkt(deepdoip1$year, deepdoip1$Result_Value, deepdoip1$month, rep = "a")
+domk<- rkt(deepdoip1$year, deepdoip1$Result_Value, deepdoip1$month, correct = TRUE, rep = "a")
 print(domk)
 
-domkip2<-  rkt(deepdoip2$year, deepdoip2$Result_Value, deepdoip2$month, rep = "a")
+domkip2<-  rkt(deepdoip2$year, deepdoip2$Result_Value, deepdoip2$month, correct = TRUE,  rep = "a")
 print(domkip2)
 
 #can i graph?
@@ -823,12 +823,7 @@ ggplot()+
   ggtitle("Whitefish Lake Deep Dissolved Oxygen")
 
 
-#next steps ####
-#maybe remove trend line
-#add on error bars
 
-
-#seperate out sites and re -do trends for sites individually for each varible
 
 
 
@@ -848,10 +843,10 @@ deeptempip1<- filter(deeptemp, Station_ID == "WF-LK-IP1")
 deeptempip2<- filter(deeptemp, Station_ID == "WF-LK-IP2")
 
 #now do tests??
-tempmk<- rkt(deeptempip1$year, deeptempip1$Result_Value, deeptempip1$month, rep = "a")
+tempmk<- rkt(deeptempip1$year, deeptempip1$Result_Value, deeptempip1$month, correct = TRUE, rep = "a")
 print(tempmk)
 
-tempmkip2<-  rkt(deeptempip2$year, deeptempip2$Result_Value, deeptempip2$month, rep = "a")
+tempmkip2<-  rkt(deeptempip2$year, deeptempip2$Result_Value, deeptempip2$month, correct = TRUE, rep = "a")
 print(tempmkip2)
 
 #graphs
@@ -888,4 +883,240 @@ ggplot()+
     panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
     panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
   ggtitle("Whitefish Lake Deep Temperature")
+
+
+
+#next steps ####
+#maybe remove trend line
+#add on error bars
+
+
+#seperate out sites and re -do trends for sites individually for each varible
+#make sure to take out non-detects
+
+
+
+
+wfsummerbothnd<- wf %>% filter(month == 6 | month == 7 | month == 8)
+
+wfsummerbothnd<- wfsummerbothnd %>% 
+  mutate(result_nd = case_when(Result_Detection_Condition == "Not Detected" ~ wfsummerbothnd$Method_Detection_Limit_Value,
+                               Result_Detection_Condition == "" ~ wfsummerbothnd$Result_Value,
+                               is.na(Result_Detection_Condition) ~ wfsummerbothnd$Result_Value)) 
+
+wfsummerbothnd <- wfsummerbothnd %>% group_by(year, Characteristic_ID, Station_ID) %>% 
+  mutate(mean = mean(result_nd, na.rm = TRUE), max = max(result_nd), min = min(result_nd),
+         se = std.error(result_nd), n = length(result_nd))
+
+wfsummerbothnd$year<- as.numeric(wfsummerbothnd$year)
+
+#do stats for this
+#tn ip 1
+#take 2009 out due to non detects
+tnmk1dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP1", Characteristic_ID == "TN", year > 2009)
+tnmk1<- rkt(tnmk1dat$year, tnmk1dat$result_nd, tnmk1dat$month, correct = TRUE, rep = "a")
+print(tnmk1)
+
+
+#tn ip 2
+tnmk2dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP2", Characteristic_ID == "TN", year > 2009)
+tnmk2<- rkt(tnmk2dat$year, tnmk2dat$result_nd, tnmk2dat$month, correct = TRUE, rep = "a")
+print(tnmk2)
+
+#NOTE n is much differnt for 2010-2012 maybe these need to be taken out?? #####
+
+
+#make graphs for this
+ggplot()+
+  #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
+  geom_point(data = tnmk1dat,
+             aes(x = year, y = mean), size = 2.5, color = "blue")+
+  geom_point(data = tnmk2dat,
+             aes(x = year, y = mean), size = 2.5, color = "red")+
+  geom_errorbar(data= tnmk1dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "blue")+
+  geom_errorbar(data= tnmk2dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "red")+
+  geom_smooth(method = "lm", se = FALSE)+
+  #ylim(0, 65)+
+  # mlc_theme+
+  # theme(axis.text=element_text(size=1),
+  # axis.title=element_text(size=1,face="bold"))+
+  ylab("Summer Deep Lake Temperature, (F, +/- s.e.)")+
+  xlab("Year")+
+  theme(
+    axis.title.x=element_text(size=10, face="bold", colour = "black"),
+    axis.title.y=element_text(size=10, face="bold", colour = "black"),
+    axis.text.x = element_text(size=12, face="bold", angle=45, hjust=1, colour = "black"),
+    axis.text.y = element_text(size=12, face="bold", colour = "black"),
+    legend.text = element_text(colour="black", size = 11, face = "bold"),
+    legend.title = element_text(colour="black", size=11, face="bold"),
+    legend.position= "right", 
+    axis.line.x = element_line(color="black", linewidth  = 0.3),
+    axis.line.y = element_line(color="black", linewidth  = 0.3),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.3),
+    title = element_text(size = 12, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
+    panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
+  ggtitle("Whitefish Lake Total Nitrogen")
+
+
+
+
+#now tp ####
+tpmk1dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP1", Characteristic_ID == "TP")
+tpmk1<- rkt(tpmk1dat$year, tpmk1dat$result_nd, tpmk1dat$month, correct = TRUE, rep = "a")
+print(tpmk1)
+
+
+#tp ip 2
+tpmk2dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP2", Characteristic_ID == "TP")
+tpmk2<- rkt(tpmk2dat$year, tpmk2dat$result_nd, tpmk2dat$month, correct = TRUE, rep = "a")
+print(tpmk2)
+
+#NOTE n is much differnt for 2010-2012 maybe these need to be taken out?? #####
+
+
+#make graphs for this
+ggplot()+
+  #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
+  geom_point(data = tpmk1dat,
+             aes(x = year, y = mean), size = 2.5, color = "blue")+
+  geom_point(data = tpmk2dat,
+             aes(x = year, y = mean), size = 2.5, color = "red")+
+  geom_errorbar(data= tpmk1dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "blue")+
+  geom_errorbar(data= tpmk2dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "red")+
+  geom_smooth(method = "lm", se = FALSE)+
+  #ylim(0, 65)+
+  # mlc_theme+
+  # theme(axis.text=element_text(size=1),
+  # axis.title=element_text(size=1,face="bold"))+
+  ylab("Summer Total Phosphorus, (ug/L, +/- s.e.)")+
+  xlab("Year")+
+  theme(
+    axis.title.x=element_text(size=10, face="bold", colour = "black"),
+    axis.title.y=element_text(size=10, face="bold", colour = "black"),
+    axis.text.x = element_text(size=12, face="bold", angle=45, hjust=1, colour = "black"),
+    axis.text.y = element_text(size=12, face="bold", colour = "black"),
+    legend.text = element_text(colour="black", size = 11, face = "bold"),
+    legend.title = element_text(colour="black", size=11, face="bold"),
+    legend.position= "right", 
+    axis.line.x = element_line(color="black", linewidth  = 0.3),
+    axis.line.y = element_line(color="black", linewidth  = 0.3),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.3),
+    title = element_text(size = 12, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
+    panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
+  ggtitle("Whitefish Lake Total Phosphorus")
+
+
+#nn  #####
+nnmk1dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP1", Characteristic_ID == "NN")
+nnmk1<- rkt(nnmk1dat$year, nnmk1dat$result_nd, nnmk1dat$month, correct = TRUE, rep = "a")
+print(nnmk1)
+
+
+#nn ip 2
+nnmk2dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP2", Characteristic_ID == "NN")
+nnmk2<- rkt(nnmk2dat$year, nnmk2dat$result_nd, nnmk2dat$month, correct = TRUE, rep = "a")
+print(nnmk2)
+
+#NOTE n is much differnt for 2010-2012 maybe these need to be taken out?? #####
+
+
+#make graphs for this
+ggplot()+
+  #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
+  geom_point(data = nnmk1dat,
+             aes(x = year, y = mean), size = 2.5, color = "blue")+
+  geom_point(data = nnmk2dat,
+             aes(x = year, y = mean), size = 2.5, color = "red")+
+  geom_errorbar(data= nnmk1dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "blue")+
+  geom_errorbar(data= nnmk2dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "red")+
+  geom_smooth(method = "lm", se = FALSE)+
+  #ylim(0, 65)+
+  # mlc_theme+
+  # theme(axis.text=element_text(size=1),
+  # axis.title=element_text(size=1,face="bold"))+
+  ylab("Summer Nitrate, (ug/L, +/- s.e.)")+
+  xlab("Year")+
+  theme(
+    axis.title.x=element_text(size=10, face="bold", colour = "black"),
+    axis.title.y=element_text(size=10, face="bold", colour = "black"),
+    axis.text.x = element_text(size=12, face="bold", angle=45, hjust=1, colour = "black"),
+    axis.text.y = element_text(size=12, face="bold", colour = "black"),
+    legend.text = element_text(colour="black", size = 11, face = "bold"),
+    legend.title = element_text(colour="black", size=11, face="bold"),
+    legend.position= "right", 
+    axis.line.x = element_line(color="black", linewidth  = 0.3),
+    axis.line.y = element_line(color="black", linewidth  = 0.3),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.3),
+    title = element_text(size = 12, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
+    panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
+  ggtitle("Whitefish Lake Total Nitrate and Nitrite")
+
+
+#chl    #####
+chlmk1dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP1", Characteristic_ID == "CHL-A-CP")
+chlmk1<- rkt(chlmk1dat$year, chlmk1dat$result_nd, chlmk1dat$month, correct = TRUE, rep = "a")
+print(chlmk1)
+
+
+#chl ip 2
+chlmk2dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP2", Characteristic_ID == "CHL-A-CP")
+chlmk2<- rkt(chlmk2dat$year, chlmk2dat$result_nd, chlmk2dat$month, correct = TRUE, rep = "a")
+print(chlmk2)
+
+#NOTE n is much differnt for 2010-2012 maybe these need to be taken out?? #####
+
+
+#make graphs for this
+ggplot()+
+  #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
+  geom_point(data = chlmk1dat,
+             aes(x = year, y = mean), size = 2.5, color = "blue")+
+  geom_point(data = chlmk2dat,
+             aes(x = year, y = mean), size = 2.5, color = "red")+
+  geom_errorbar(data= chlmk1dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "blue")+
+  geom_errorbar(data= chlmk2dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "red")+
+  geom_smooth(method = "lm", se = FALSE)+
+  #ylim(0, 65)+
+  # mlc_theme+
+  # theme(axis.text=element_text(size=1),
+  # axis.title=element_text(size=1,face="bold"))+
+  ylab("Summer CHL, (ug/L, +/- s.e.)")+
+  xlab("Year")+
+  theme(
+    axis.title.x=element_text(size=10, face="bold", colour = "black"),
+    axis.title.y=element_text(size=10, face="bold", colour = "black"),
+    axis.text.x = element_text(size=12, face="bold", angle=45, hjust=1, colour = "black"),
+    axis.text.y = element_text(size=12, face="bold", colour = "black"),
+    legend.text = element_text(colour="black", size = 11, face = "bold"),
+    legend.title = element_text(colour="black", size=11, face="bold"),
+    legend.position= "right", 
+    axis.line.x = element_line(color="black", linewidth  = 0.3),
+    axis.line.y = element_line(color="black", linewidth  = 0.3),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.3),
+    title = element_text(size = 12, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
+    panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
+  ggtitle("Whitefish Lake Chlorphyls a")
+
+
+
+
+
+
+
 

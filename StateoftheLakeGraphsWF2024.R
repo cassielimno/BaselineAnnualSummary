@@ -885,6 +885,62 @@ ggplot()+
   ggtitle("Whitefish Lake Deep Temperature")
 
 
+#surface temp ####
+
+surftemp<- wfsummer  %>% group_by(year, Characteristic_ID, Station_ID, month) %>% 
+  filter(Result_Depth_Height_Measure == min(Result_Depth_Height_Measure), Characteristic_ID == "TEMP-W") 
+
+surftemp<- surftemp %>% group_by(Station_ID, year) %>% 
+  mutate(mean = mean(Result_Value, na.rm = TRUE),
+         se = std.error(Result_Value), n = length(Result_Value))
+
+surftempip1<- filter(surftemp, Station_ID == "WF-LK-IP1")
+
+surftempip2<- filter(surftemp, Station_ID == "WF-LK-IP2")
+
+#now do tests??
+surftempmk<- rkt(surftempip1$year, surftempip1$Result_Value, surftempip1$month, correct = TRUE, rep = "a")
+print(surftempmk)
+
+surftempmkip2<-  rkt(surftempip2$year, surftempip2$Result_Value, surftempip2$month, correct = TRUE, rep = "a")
+print(surftempmkip2)
+
+#graphs
+ggplot()+
+  #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
+  geom_point(data = surftempip1,
+             aes(x = year, y = mean), size = 2.5, color = "blue")+
+  geom_point(data = surftempip2,
+             aes(x = year, y = mean), size = 2.5, color = "red")+
+  geom_errorbar(data= surftempip1, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "blue")+
+  geom_errorbar(data= surftempip2, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "red")+
+  geom_smooth(method = "lm", se = FALSE)+
+  #ylim(0, 65)+
+  # mlc_theme+
+  # theme(axis.text=element_text(size=1),
+  # axis.title=element_text(size=1,face="bold"))+
+  ylab("Summer Deep Lake Temperature, (F, +/- s.e.)")+
+  xlab("Year")+
+  theme(
+    axis.title.x=element_text(size=10, face="bold", colour = "black"),
+    axis.title.y=element_text(size=10, face="bold", colour = "black"),
+    axis.text.x = element_text(size=12, face="bold", angle=45, hjust=1, colour = "black"),
+    axis.text.y = element_text(size=12, face="bold", colour = "black"),
+    legend.text = element_text(colour="black", size = 11, face = "bold"),
+    legend.title = element_text(colour="black", size=11, face="bold"),
+    legend.position= "right", 
+    axis.line.x = element_line(color="black", linewidth  = 0.3),
+    axis.line.y = element_line(color="black", linewidth  = 0.3),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.3),
+    title = element_text(size = 12, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
+    panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
+  ggtitle("Whitefish Lake Deep Temperature")
+
+
 
 #next steps ####
 #maybe remove trend line
@@ -1065,13 +1121,14 @@ ggplot()+
 
 
 #chl    #####
-chlmk1dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP1", Characteristic_ID == "CHL-A-CP")
+#taking out 2011 since there is only one data point
+chlmk1dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP1", Characteristic_ID == "CHL-A-CP", year > 2011)
 chlmk1<- rkt(chlmk1dat$year, chlmk1dat$result_nd, chlmk1dat$month, correct = TRUE, rep = "a")
 print(chlmk1)
 
 
 #chl ip 2
-chlmk2dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP2", Characteristic_ID == "CHL-A-CP")
+chlmk2dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP2", Characteristic_ID == "CHL-A-CP", year >2011)
 chlmk2<- rkt(chlmk2dat$year, chlmk2dat$result_nd, chlmk2dat$month, correct = TRUE, rep = "a")
 print(chlmk2)
 
@@ -1113,6 +1170,60 @@ ggplot()+
     panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
   ggtitle("Whitefish Lake Chlorophyll a")
 
+
+#secchi
+
+#taking out 2011 since there is only one data point
+secchi<- wfsummer %>% group_by(Station_ID, year, Characteristic_ID) %>% 
+  mutate(mean = mean(Result_Value, na.rm = TRUE),
+         se = std.error(Result_Value), n = length(Result_Value))
+secchimk1dat<-  secchi %>% filter(Station_ID == "WF-LK-IP1", Characteristic_ID == "DEPTH-SECCHI")
+secchimk1<- rkt(secchimk1dat$year, secchimk1dat$Result_Value, secchimk1dat$month, correct = TRUE, rep = "a")
+print(secchimk1)
+
+
+#secchi ip 2
+secchimk2dat<-  secchi %>% filter(Station_ID == "WF-LK-IP2", Characteristic_ID == "DEPTH-SECCHI")
+secchimk2<- rkt(secchimk2dat$year, secchimk2dat$Result_Value, secchimk2dat$month, correct = TRUE, rep = "a")
+print(secchimk2)
+
+#NOTE n is much differnt for 2010-2012 maybe these need to be taken out?? #####
+
+
+#make graphs for this
+ggplot()+
+  #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
+  geom_point(data = secchimk1dat,
+             aes(x = year, y = mean), size = 2.5, color = "blue")+
+  geom_point(data = secchimk2dat,
+             aes(x = year, y = mean), size = 2.5, color = "red")+
+  geom_errorbar(data= secchimk1dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "blue")+
+  geom_errorbar(data= secchimk2dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "red")+
+  geom_smooth(method = "lm", se = FALSE)+
+  #ylim(0, 65)+
+  # mlc_theme+
+  # theme(axis.text=element_text(size=1),
+  # axis.title=element_text(size=1,face="bold"))+
+  ylab("Summer secchi, (ug/L, +/- s.e.)")+
+  xlab("Year")+
+  theme(
+    axis.title.x=element_text(size=10, face="bold", colour = "black"),
+    axis.title.y=element_text(size=10, face="bold", colour = "black"),
+    axis.text.x = element_text(size=12, face="bold", angle=45, hjust=1, colour = "black"),
+    axis.text.y = element_text(size=12, face="bold", colour = "black"),
+    legend.text = element_text(colour="black", size = 11, face = "bold"),
+    legend.title = element_text(colour="black", size=11, face="bold"),
+    legend.position= "right", 
+    axis.line.x = element_line(color="black", linewidth  = 0.3),
+    axis.line.y = element_line(color="black", linewidth  = 0.3),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.3),
+    title = element_text(size = 12, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
+    panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
+  ggtitle("Whitefish Lake secchi")
 
 
 

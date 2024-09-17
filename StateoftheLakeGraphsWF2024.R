@@ -1132,6 +1132,8 @@ chlmk2dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP2", Characteristic
 chlmk2<- rkt(chlmk2dat$year, chlmk2dat$result_nd, chlmk2dat$month, correct = TRUE, rep = "a")
 print(chlmk2)
 
+chlmk1dat$year<-as.character(chlmk1dat$year)
+chlmk2dat$year<-as.character(chlmk2dat$year)
 #NOTE n is much differnt for 2010-2012 maybe these need to be taken out?? #####
 
 

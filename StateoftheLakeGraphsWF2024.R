@@ -1212,6 +1212,12 @@ print(secchimk2)
 
 #NOTE n is much differnt for 2010-2012 maybe these need to be taken out?? #####
 
+#mann kendal on both together
+secchi2<- secchi %>% filter(Characteristic_ID == "DEPTH-SECCHI")
+secchimk<- rkt(secchi2$year, secchi2$Result_Value, secchi2$month, correct = TRUE, rep = "a") %>% 
+  print(secchimk)
+
+
 
 #make graphs for this
 ggplot()+

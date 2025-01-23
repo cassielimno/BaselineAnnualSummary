@@ -757,7 +757,6 @@ ggplot(data = tribssummer %>% filter(Characteristic_ID == "TP", Station_ID == "C
 
 
 #need to do all linear analysis again using the mann kendall analysis #####
-install.packages("rkt")
 library(rkt)
 
 
@@ -771,6 +770,7 @@ deepdo<- wfsummer  %>% group_by(year, Characteristic_ID, Station_ID, month) %>%
 deepdo<- deepdo %>% group_by(Station_ID, year) %>% 
   mutate(mean = mean(Result_Value, na.rm = TRUE),
          se = std.error(Result_Value), n = length(Result_Value))
+
 
 deepdoip1<- filter(deepdo, Station_ID == "WF-LK-IP1")
 
@@ -787,6 +787,7 @@ print(domkip2)
 
 
 #note on the below graph: ip1 has a trend (but there is no trend line on the graph) ip2 has no trend
+png("deepDO.png", units="in", width=7, height=5, res=300)
 
 ggplot()+
   #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
@@ -824,7 +825,7 @@ ggplot()+
 
 
 
-
+dev.off()
 
 
 #okay lets do this for the other varibles (temp (surface and deep?), chl, tn, tp, nn, secchi)
@@ -849,6 +850,8 @@ print(tempmk)
 tempmkip2<-  rkt(deeptempip2$year, deeptempip2$Result_Value, deeptempip2$month, correct = TRUE, rep = "a")
 print(tempmkip2)
 
+
+png("deeptempNew.png", units="in", width=7, height=5, res=300)
 #graphs
 ggplot()+
   #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
@@ -867,6 +870,7 @@ ggplot()+
   # axis.title=element_text(size=1,face="bold"))+
   ylab("Summer Deep Lake Temperature, (F, +/- s.e.)")+
   xlab("Year")+
+  scale_x_continuous(breaks = seq(2007, 2023, 1))+
   theme(
     axis.title.x=element_text(size=10, face="bold", colour = "black"),
     axis.title.y=element_text(size=10, face="bold", colour = "black"),
@@ -883,6 +887,8 @@ ggplot()+
     panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
     panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
   ggtitle("Whitefish Lake Deep Temperature")
+
+dev.off()
 
 
 #surface temp ####
@@ -1132,12 +1138,18 @@ chlmk2dat<-  wfsummerbothnd %>% filter(Station_ID == "WF-LK-IP2", Characteristic
 chlmk2<- rkt(chlmk2dat$year, chlmk2dat$result_nd, chlmk2dat$month, correct = TRUE, rep = "a")
 print(chlmk2)
 
-chlmk1dat$year<-as.character(chlmk1dat$year)
-chlmk2dat$year<-as.character(chlmk2dat$year)
-#NOTE n is much differnt for 2010-2012 maybe these need to be taken out?? #####
 
+chlmk1dat$year<-as.numeric(chlmk1dat$year)
+chlmk2dat$year<-as.numeric(chlmk2dat$year)
+
+
+trend_line<-predict(loess(mean ~ year, data = chlmk1dat))
+
+trend_line2<- predict(loess(mean~year, data = chlmk2dat))
 
 #make graphs for this
+setwd("C:/Users/User/Dropbox/WLI (2)/CASSIE/Whitefish data and code/SummaryStats/BaselineAnnualSummary/StateoftheLake")
+png("CHlaNew.png", units="in", width=7, height=5, res=300)
 ggplot()+
   #geom_hline(yintercept = 84.45, linetype = "dashed", color = "black", alpha = 0.5)+
   geom_point(data = chlmk1dat,
@@ -1148,13 +1160,16 @@ ggplot()+
                 width = 0.3, color = "blue")+
   geom_errorbar(data= chlmk2dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
                 width = 0.3, color = "red")+
-  geom_smooth(method = "lm", se = FALSE)+
+  #geom_smooth(method = "lm", se = FALSE)+
+  geom_line(data= chlmk1dat, aes(x = year, y = trend_line), color = "blue", size = 1)+
+  geom_line(data= chlmk2dat, aes(x = year, y = trend_line2), color = "red", size = 1)+
   #ylim(0, 65)+
   # mlc_theme+
   # theme(axis.text=element_text(size=1),
   # axis.title=element_text(size=1,face="bold"))+
   ylab("Summer CHL, (ug/L, +/- s.e.)")+
   xlab("Year")+
+  scale_x_continuous(breaks = seq(2012, 2023, 1))+
   theme(
     axis.title.x=element_text(size=10, face="bold", colour = "black"),
     axis.title.y=element_text(size=10, face="bold", colour = "black"),
@@ -1170,7 +1185,13 @@ ggplot()+
     panel.background = element_blank(),
     panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
     panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
-  ggtitle("Whitefish Lake Chlorophyll a")
+  ggtitle("Whitefish Lake Chlorophyll-a")
+
+dev.off()
+
+
+
+
 
 
 #secchi

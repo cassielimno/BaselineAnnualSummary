@@ -1255,7 +1255,103 @@ ggplot()+
   ggtitle("Whitefish Lake secchi")
 
 
+#RE-DOING TP, TN, CHLA, AND SECCHI GRAPHS AGAIN WITH WATERSHED CRITERIA AS LINE ######
+#THESE ARE THE FINAL GRAPHS FOR THIS EDITION MADE 2-5-2025
+#test all standards on graphs to see if they are similar #####
+#secchi graph ####
+ggplot(data = wfsummerboth %>% filter(Characteristic_ID == "DEPTH-SECCHI"),
+       aes(x = year, y = mean))+
+  geom_hline(yintercept = 17.27, linetype = "dashed", color = "red")+
+  geom_hline(yintercept = 22.65, linetype = "dashed", color = "black", alpha = 0.7)+
+  geom_point(size = 2.5)+
+  geom_errorbar(aes(ymin = mean-se, ymax = mean+se), width = 0.3)+
+  ylim(0, 42)+
+  ggtitle("Whitefish Secchi")+
+  mlc_theme+
+  ylab("Secchi Depth ft, (+/- s.e.)")+
+  xlab("Year")
 
+
+#make graphs for this
+ggplot()+
+  geom_hline(yintercept = 2.51, linetype = "dashed", color = "red")+
+  geom_hline(yintercept = 1.78, linetype = "dashed", color = "black", alpha = .7)+
+  geom_point(data = chlmk1dat,
+             aes(x = year, y = mean), size = 2.5, color = "blue")+
+  geom_point(data = chlmk2dat,
+             aes(x = year, y = mean), size = 2.5, color = "red")+
+  geom_errorbar(data= chlmk1dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "blue")+
+  geom_errorbar(data= chlmk2dat, aes(x = year, y = mean, ymin = mean-se, ymax = mean+se), 
+                width = 0.3, color = "red")+
+  #geom_smooth(method = "lm", se = FALSE)+
+  geom_line(data= chlmk1dat, aes(x = year, y = trend_line), color = "blue", size = 1)+
+  geom_line(data= chlmk2dat, aes(x = year, y = trend_line2), color = "red", size = 1)+
+  #ylim(0, 65)+
+  # mlc_theme+
+  # theme(axis.text=element_text(size=1),
+  # axis.title=element_text(size=1,face="bold"))+
+  ylab("Summer CHL, (ug/L, +/- s.e.)")+
+  xlab("Year")+
+  scale_x_continuous(breaks = seq(2012, 2023, 1))+
+  theme(
+    axis.title.x=element_text(size=10, face="bold", colour = "black"),
+    axis.title.y=element_text(size=10, face="bold", colour = "black"),
+    axis.text.x = element_text(size=12, face="bold", angle=45, hjust=1, colour = "black"),
+    axis.text.y = element_text(size=12, face="bold", colour = "black"),
+    legend.text = element_text(colour="black", size = 11, face = "bold"),
+    legend.title = element_text(colour="black", size=11, face="bold"),
+    legend.position= "right", 
+    axis.line.x = element_line(color="black", linewidth  = 0.3),
+    axis.line.y = element_line(color="black", linewidth  = 0.3),
+    panel.border = element_rect(colour = "black", fill=NA, size=0.3),
+    title = element_text(size = 12, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color="grey", linewidth  = 0.3), 
+    panel.grid.minor = element_line(color = "grey", linewidth = 0.3))+
+  ggtitle("Whitefish Lake Chlorophyll-a")
+
+
+
+
+
+#nitrogen
+#NOTE SOMETIMES THIS GRAPH SEPARATES OUT SITES RE-LOAD THE DATAFRAME AND IT SHOULD CORRECT
+#filtering out 2009 because there is only one day of data and it is all nondetect
+glimpse(wfsummerbothnd)
+#make sure year is char
+wfsummerbothnd$year<- as.character(wfsummerbothnd$year)
+
+ggplot(data = wfsummerbothnd %>% filter(Characteristic_ID == "TN", year > 2009), #NOTE HERE 2009 IS FILTERED OUT
+       aes(x = year, y = mean))+
+  geom_hline(yintercept = 95, linetype = "dashed", color = "red")+
+  geom_hline(yintercept = 79.05, linetype = "dashed", color = "black", alpha = 0.7)+
+  geom_point(size = 2.5)+
+  geom_errorbar(aes(ymin = mean-se, ymax = mean+se), width = 0.3)+
+  ylim(0, 130)+
+  mlc_theme+
+  ylab("Summer Total Nitrogen, (ug/L, +/- s.e.)")+
+  xlab("Year")+
+  ggtitle("Whitefish TN")
+
+
+
+
+
+
+
+#phosphorus ####
+ggplot(data = wfsummerbothnd %>% filter(Characteristic_ID == "TP"), 
+       aes(x = year, y = mean))+
+  geom_hline(yintercept = 5, linetype = "dashed", color = "red")+
+  geom_hline(yintercept = 4.29, linetype = "dashed", color = "black", alpha = 0.7)+
+  geom_point(size = 2.5)+
+  geom_errorbar(aes(ymin = mean-se, ymax = mean+se), width = 0.3)+
+  #ylim(0, 40)+
+  mlc_theme+
+  ylab("Summer Total Phosphorus, (ug/L, +/- s.e.)")+
+  xlab("Year")+
+  ggtitle("Whitefish TP")
 
 
 

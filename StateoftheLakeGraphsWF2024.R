@@ -706,7 +706,7 @@ ggplot(data = wfsummerboth %>% filter(Characteristic_ID == "DEPTH-SECCHI", !(yea
   geom_hline(yintercept = 22.65, linetype = "dashed", color = "black", alpha = 0.7)+
   geom_point(size = 2.5)+
   geom_errorbar(aes(ymin = mean-se, ymax = mean+se), width = 0.3)+
-  ylim(0, 42)+
+  ylim(42, 0)+
   ggtitle("Whitefish Secchi")+
   mlc_theme+
   ylab("Secchi Depth ft, (+/- s.e.)")+

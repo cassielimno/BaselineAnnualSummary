@@ -700,6 +700,7 @@ ggplot()+
 #secchi graph ####
 wfsummerboth$year<- as.character(wfsummerboth$year)
 #taking out 2019 since it is missing june
+#png("SecchiWQCriteria.png", units="in", width=7, height=5, res=300)
 ggplot(data = wfsummerboth %>% filter(Characteristic_ID == "DEPTH-SECCHI", !(year == "2019")),
        aes(x = year, y = mean))+
   geom_hline(yintercept = 17.27, linetype = "dashed", color = "red")+
@@ -712,8 +713,10 @@ ggplot(data = wfsummerboth %>% filter(Characteristic_ID == "DEPTH-SECCHI", !(yea
   ylab("Secchi Depth ft, (+/- s.e.)")+
   xlab("Year")
 
+dev.off()
 
 #make graphs for this
+png("CHLAWQCriteria.png", units="in", width=7, height=5, res=300)
 ggplot()+
   geom_hline(yintercept = 2.51, linetype = "dashed", color = "red")+
   geom_hline(yintercept = 1.44, linetype = "dashed", color = "black", alpha = .7)+
@@ -762,7 +765,7 @@ ggplot()+
 glimpse(wfsummerbothnd)
 #make sure year is char
 wfsummerbothnd$year<- as.character(wfsummerbothnd$year)
-
+#png("TNWQCriteria.png", units="in", width=7, height=5, res=300)
 ggplot(data = wfsummerbothnd %>% filter(Characteristic_ID == "TN", year > 2009), #NOTE HERE 2009 IS FILTERED OUT
        aes(x = year, y = mean))+
   geom_hline(yintercept = 95, linetype = "dashed", color = "red")+
@@ -782,6 +785,7 @@ ggplot(data = wfsummerbothnd %>% filter(Characteristic_ID == "TN", year > 2009),
 
 
 #phosphorus ####
+#png("TPWQCriteria.png", units="in", width=7, height=5, res=300)
 ggplot(data = wfsummerbothnd %>% filter(Characteristic_ID == "TP"), 
        aes(x = year, y = mean))+
   geom_hline(yintercept = 5, linetype = "dashed", color = "red")+
@@ -795,7 +799,7 @@ ggplot(data = wfsummerbothnd %>% filter(Characteristic_ID == "TP"),
   ggtitle("Whitefish TP")
 
 
-
+dev.off()
 
 
 
